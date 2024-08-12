@@ -10,7 +10,7 @@ namespace SupportUS.Web.Controllers
     {
         public async Task FindQuestByIdAsync(HttpContext context, Guid id)
         {
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            using var db = GetDbContext();
             var task = await db.Quests.FindAsync(id);
             var result = new
             {
@@ -23,12 +23,11 @@ namespace SupportUS.Web.Controllers
         public async Task CreateQuestAsync(HttpContext context)
         {
             var info = await context.Request.ReadFromJsonAsync<QuestInfo>();
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            using var db = GetDbContext();
             var customer = await db.Profiles.FindAsync(info.CustomerId);
             if (customer == null)
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("Quest customer not found.");
+                await TellNotFoundAsync(context, nameof(customer));
                 return;
             }
             if (info.Name == null || 
@@ -36,8 +35,7 @@ namespace SupportUS.Web.Controllers
                 info.Price == null ||
                 info.Location == null)
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsync("Some of required params are null. Name, description, price and location are required.");
+                await TellClientErrorAsync(context, "Some of required params are null. Name, description, price and location are required.", StatusCodes.Status400BadRequest);
                 return;
             }
             var quest = Quest.CreateQuest(customer, info.Name, info.Description, info.Price.Value, info.Location);
@@ -50,12 +48,11 @@ namespace SupportUS.Web.Controllers
         public async Task UpdateQuestAsync(HttpContext context)
         {
             var info = await context.Request.ReadFromJsonAsync<QuestInfo>();
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            using var db = GetDbContext();
             var quest = await db.Quests.FindAsync(info.Id);
             if (quest == null) 
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("Quest not found.");
+                await TellNotFoundAsync(context, nameof(quest));
                 return;
             }
             info.Name = null;
@@ -73,7 +70,7 @@ namespace SupportUS.Web.Controllers
 
         public async Task DeleteQuestAsync(HttpContext context, Guid questId, long customerId)
         {
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            using var db = GetDbContext();
             var quest = await db.Quests.FindAsync(questId);
             if (quest == null)
             {
@@ -93,25 +90,23 @@ namespace SupportUS.Web.Controllers
 
         public async Task TakeQuestAsync(HttpContext context, Guid questId, long executorId)
         {
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            using var db = GetDbContext();
             var quest = await db.Quests.FindAsync(questId);
             if (quest == null)
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("Quest not found.");
+                await TellNotFoundAsync(context, nameof(quest));
                 return;
             }
-            if (quest.Status != Quest.QuestStatus.Opened)
+
+            if (quest!.Status != Quest.QuestStatus.Opened)
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsync("Cannot take non-opened task.");
+                await TellClientErrorAsync(context, "Cannot take non-opened task.");
                 return;
             }
             var executor = await db.Profiles.FindAsync(executorId);
             if (executor == null)
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("Executor profile not found.");
+                await TellNotFoundAsync(context, nameof(executor));
                 return;
             }
             quest.Executor = executor;
@@ -122,24 +117,21 @@ namespace SupportUS.Web.Controllers
 
         public async Task CancelQuestAsync(HttpContext context, Guid questId, long initiatorId)
         {
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            using var db = GetDbContext();
             var quest = await db.Quests.FindAsync(questId);
             if (quest == null)
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("Quest not found.");
+                await TellNotFoundAsync(context, nameof(quest));
                 return;
             }
             if (quest.Status == Quest.QuestStatus.Completed)
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsync("Cannot cancel closed task.");
+                await TellClientErrorAsync(context, "Cannot cancel closed task.");
                 return;
             }
             if (quest.Customer.Id != initiatorId)
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsync("Cannot cancel foreign task.");
+                await TellClientErrorAsync(context, "Cannot cancel foreign task.");
                 return;
             }
             quest.Status = Quest.QuestStatus.Cancelled;

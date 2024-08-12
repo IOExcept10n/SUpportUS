@@ -42,66 +42,45 @@ app.MapPost("/api/quests/take", controllers.Quests.TakeQuestAsync);
 app.MapPost("/api/quests/cancel", controllers.Quests.CancelQuestAsync);
 
 //Report
-app.MapPost("/api/reviews/reportTask", async (HttpContext context, Ticket persone, Guid personId) =>
-{
-
-});
+app.MapPost("/api/quests/report", () => { });
 
 //Complete
-app.MapPost("/api/reviews/completeTask", async (HttpContext context, Guid taskId, Guid personId) =>
-{
-
-});
+app.MapPost("/api/quests/complete", () => { });
 
 // Reviews
-app.MapPost("/api/reviews/publishRewiew", async (HttpContext context, Guid author, string text, int rate) =>
-{
+app.MapPost("/api/reviews/publish", controllers.Reviews.PublishReviewAsync);
 
-});
+// Delete
+app.MapPost("/api/reviews/deleteRewiew", () => { });
 
-app.MapPost("/api/reviews/deleteRewiew", async (HttpContext context, Guid idPersone, Guid idReview) =>
-{
-
-});
-
-app.MapPost("/api/reviews/reportRewiew", async (HttpContext context, Guid idReport, Ticket ticketPersone) =>
-{
-
-});
+// Report
+app.MapPost("/api/reviews/report", controllers.Reviews.ReportReviewAsync);
 
 
 //Profile
-app.MapPost("/api/reviews/createProfile", async (HttpContext context, Guid idReport, Ticket ticketPersone) =>
-{
+app.MapPost("/api/profiles/create", controllers.Profiles.CreateProfileAsync);
 
-});
-
-app.MapPost("/api/reviews/reportProfile", async (HttpContext context, Guid idAuthor, Guid idReporter, Ticket ticketPersone) =>
-{
-
-});
+app.MapPost("/api/profiles/reportProfile", controllers.Profiles.ReportProfileAsync);
 
 //AdminPanel
-app.MapPost("/api/reviews/banAdminPanel", async (HttpContext context, Guid idPersone, Ticket ticketReasone) =>
-{
+//app.MapPost("/api/reviews/banAdminPanel", async (HttpContext context, Guid idPersone, Ticket ticketReasone) =>
+//{
 
-});
+//});
 
-app.MapPost("/api/reviews/unBanAdminPanel", async (HttpContext context, Guid idPersone) =>
-{
+//app.MapPost("/api/reviews/unBanAdminPanel", async (HttpContext context, Guid idPersone) =>
+//{
 
-});
+//});
 
-app.MapPost("/api/reviews/setCoinsAdminPanel", async (HttpContext context, Guid idPersone, int coins) =>
-{
+//app.MapPost("/api/reviews/setCoinsAdminPanel", async (HttpContext context, Guid idPersone, int coins) =>
+//{
 
-});
+//});
 
-app.MapPost("/api/reviews/undoTaskAdminPanel", async (HttpContext context, Guid idTask) =>
-{
+//app.MapPost("/api/reviews/undoTaskAdminPanel", async (HttpContext context, Guid idTask) =>
+//{
 
-});
-
-
+//});
 
 app.Run();

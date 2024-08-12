@@ -9,7 +9,7 @@ namespace SupportUS.Web.Controllers
     {
         public async Task GetProfileById(HttpContext context, long id)
         {
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            using var db = GetDbContext();
             var profile = db.Profiles.Find(id);
             var result = new
             {
@@ -19,13 +19,12 @@ namespace SupportUS.Web.Controllers
             await context.Response.WriteAsJsonAsync(result);
         }
 
-        public async Task CreateProfile(HttpContext context, long id)
+        public async Task CreateProfileAsync(HttpContext context, long id)
         {
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            using var db = GetDbContext();
             if (await db.Profiles.AnyAsync(x => x.Id == id))
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsync("Profile already exists.");
+                await TellClientErrorAsync(context, "Profile already exists.");
                 return;
             }
             var profile = new Profile() { Id = id };
@@ -33,21 +32,19 @@ namespace SupportUS.Web.Controllers
             await db.SaveChangesAsync();
         }
 
-        public async Task ReportProfile(HttpContext context, long id)
+        public async Task ReportProfileAsync(HttpContext context, long id)
         {
             using var db = Application.Services.GetRequiredService<QuestsDb>();
             var user = await db.Profiles.FindAsync(id);
             if (user == null)
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("Profile doesn't exist.");
+                await TellNotFoundAsync(context, nameof(user));
                 return;
             }
             var ticket = await context.Request.ReadFromJsonAsync<Ticket>();
             if (ticket == null)
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsync("Request doesn't have the ticket info.");
+                await TellClientErrorAsync(context, "Request doesn't have the ticket info.", StatusCodes.Status400BadRequest);
                 return;
             }
             await db.Tickets.AddAsync(ticket);
