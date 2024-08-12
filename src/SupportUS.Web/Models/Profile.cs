@@ -5,7 +5,7 @@
         public enum UserStatus
         {
             Admin,
-            Banned,
+            Banned,//
             Basic,
             Developer,
             Premium
