@@ -10,8 +10,8 @@ using SupportUS.Web.Data;
 
 namespace SupportUS.Web.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
-    [Migration("20240811060024_InitialCreate")]
+    [DbContext(typeof(QuestsDb))]
+    [Migration("20240812133531_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -50,7 +50,10 @@ namespace SupportUS.Web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ContractorReviewId")
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CustomerId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("CustomerReviewId")
@@ -61,6 +64,12 @@ namespace SupportUS.Web.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ExecutorId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ExecutorReviewId")
                         .HasColumnType("TEXT");
 
                     b.Property<TimeSpan?>("ExpectedDuration")
@@ -77,24 +86,18 @@ namespace SupportUS.Web.Migrations
                     b.Property<int>("Price")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("ProfileId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ProfileId1")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContractorReviewId");
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("CustomerReviewId");
 
-                    b.HasIndex("ProfileId");
+                    b.HasIndex("ExecutorId");
 
-                    b.HasIndex("ProfileId1");
+                    b.HasIndex("ExecutorReviewId");
 
                     b.ToTable("Quests");
                 });
@@ -119,27 +122,48 @@ namespace SupportUS.Web.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("SupportUS.Web.Models.Ticket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tickets");
+                });
+
             modelBuilder.Entity("SupportUS.Web.Models.Quest", b =>
                 {
-                    b.HasOne("SupportUS.Web.Models.Review", "ContractorReview")
-                        .WithMany()
-                        .HasForeignKey("ContractorReviewId");
+                    b.HasOne("SupportUS.Web.Models.Profile", "Customer")
+                        .WithMany("CreatedQuests")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("SupportUS.Web.Models.Review", "CustomerReview")
                         .WithMany()
                         .HasForeignKey("CustomerReviewId");
 
-                    b.HasOne("SupportUS.Web.Models.Profile", null)
-                        .WithMany("CreatedTasks")
-                        .HasForeignKey("ProfileId");
+                    b.HasOne("SupportUS.Web.Models.Profile", "Executor")
+                        .WithMany("CompletedQuests")
+                        .HasForeignKey("ExecutorId");
 
-                    b.HasOne("SupportUS.Web.Models.Profile", null)
-                        .WithMany("CurrentTasks")
-                        .HasForeignKey("ProfileId1");
+                    b.HasOne("SupportUS.Web.Models.Review", "ExecutorReview")
+                        .WithMany()
+                        .HasForeignKey("ExecutorReviewId");
 
-                    b.Navigation("ContractorReview");
+                    b.Navigation("Customer");
 
                     b.Navigation("CustomerReview");
+
+                    b.Navigation("Executor");
+
+                    b.Navigation("ExecutorReview");
                 });
 
             modelBuilder.Entity("SupportUS.Web.Models.Review", b =>
@@ -155,9 +179,9 @@ namespace SupportUS.Web.Migrations
 
             modelBuilder.Entity("SupportUS.Web.Models.Profile", b =>
                 {
-                    b.Navigation("CreatedTasks");
+                    b.Navigation("CompletedQuests");
 
-                    b.Navigation("CurrentTasks");
+                    b.Navigation("CreatedQuests");
                 });
 #pragma warning restore 612, 618
         }

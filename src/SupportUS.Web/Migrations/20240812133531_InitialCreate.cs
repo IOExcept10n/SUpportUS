@@ -27,6 +27,18 @@ namespace SupportUS.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Tickets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Content = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tickets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Reviews",
                 columns: table => new
                 {
@@ -50,6 +62,7 @@ namespace SupportUS.Web.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
@@ -57,40 +70,41 @@ namespace SupportUS.Web.Migrations
                     Location = table.Column<string>(type: "TEXT", nullable: false),
                     ExpectedDuration = table.Column<TimeSpan>(type: "TEXT", nullable: true),
                     Deadline = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    ContractorReviewId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ExecutorReviewId = table.Column<Guid>(type: "TEXT", nullable: true),
                     CustomerReviewId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    ProfileId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    ProfileId1 = table.Column<Guid>(type: "TEXT", nullable: true)
+                    ExecutorId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Quests", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Quests_Profiles_ProfileId",
-                        column: x => x.ProfileId,
+                        name: "FK_Quests_Profiles_CustomerId",
+                        column: x => x.CustomerId,
                         principalTable: "Profiles",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Quests_Profiles_ProfileId1",
-                        column: x => x.ProfileId1,
+                        name: "FK_Quests_Profiles_ExecutorId",
+                        column: x => x.ExecutorId,
                         principalTable: "Profiles",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Quests_Reviews_ContractorReviewId",
-                        column: x => x.ContractorReviewId,
-                        principalTable: "Reviews",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Quests_Reviews_CustomerReviewId",
                         column: x => x.CustomerReviewId,
                         principalTable: "Reviews",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Quests_Reviews_ExecutorReviewId",
+                        column: x => x.ExecutorReviewId,
+                        principalTable: "Reviews",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Quests_ContractorReviewId",
+                name: "IX_Quests_CustomerId",
                 table: "Quests",
-                column: "ContractorReviewId");
+                column: "CustomerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Quests_CustomerReviewId",
@@ -98,14 +112,14 @@ namespace SupportUS.Web.Migrations
                 column: "CustomerReviewId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Quests_ProfileId",
+                name: "IX_Quests_ExecutorId",
                 table: "Quests",
-                column: "ProfileId");
+                column: "ExecutorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Quests_ProfileId1",
+                name: "IX_Quests_ExecutorReviewId",
                 table: "Quests",
-                column: "ProfileId1");
+                column: "ExecutorReviewId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_AuthorId",
@@ -118,6 +132,9 @@ namespace SupportUS.Web.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Quests");
+
+            migrationBuilder.DropTable(
+                name: "Tickets");
 
             migrationBuilder.DropTable(
                 name: "Reviews");

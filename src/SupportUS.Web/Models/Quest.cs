@@ -1,4 +1,7 @@
-﻿namespace SupportUS.Web.Models
+﻿using SupportUS.Web.Json;
+using System.Text.Json.Serialization;
+
+namespace SupportUS.Web.Models
 {
     public class Quest()
     {
@@ -27,6 +30,7 @@
 
         public Guid Id { get; set; }
 
+        [JsonConverter(typeof(ProfileShortConverter))]
         public required Profile Customer { get; set; }
 
         public required string Name { get; set; }
@@ -48,6 +52,9 @@
         public Review? ExecutorReview { get; set; }
 
         public Review? CustomerReview { get; set; }
+
+        [JsonConverter(typeof(ProfileShortConverter))]
+        public Profile? Executor { get; set; }
 
         public void ApplyInfo(QuestInfo info)
         {

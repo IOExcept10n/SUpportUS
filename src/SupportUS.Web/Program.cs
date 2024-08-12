@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using SupportUS.Web.Controllers;
 using SupportUS.Web.Data;
 using SupportUS.Web.Models;
@@ -8,7 +7,7 @@ using System.Net.Sockets;
 using System.Text.Json.Nodes;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<AppDbContext>();
+builder.Services.AddTransient<QuestsDb>();
 var app = builder.Build();
 
 app.MapGet("/", async context =>
@@ -23,30 +22,24 @@ app.MapGet("/", async context =>
 });
 
 // API
-var controllers = new APIControllers();
+var controllers = new APIControllers(app);
 // Tasks
-app.MapGet("/api/quests/find-by-id", controllers.Quests.FindQuestById);
+app.MapGet("/api/quests/find-by-id", controllers.Quests.FindQuestByIdAsync);
 
 //Create
-app.MapPost("/api/quests/create", controllers.Quests.CreateQuest);
+app.MapPost("/api/quests/create", controllers.Quests.CreateQuestAsync);
 
 //Update
-app.MapPut("/api/quests/update", controllers.Quests.UpdateQuest);
+app.MapPut("/api/quests/update", controllers.Quests.UpdateQuestAsync);
 
 //Delete
-app.MapDelete("/api/quests/delete", controllers.Quests.DeleteQuest);
+app.MapDelete("/api/quests/delete", controllers.Quests.DeleteQuestAsync);
 
 //Take
-app.MapPost("/api/quests/take", async (HttpContext context, Guid taskId, Guid workerId) =>
-{
-
-});
+app.MapPost("/api/quests/take", controllers.Quests.TakeQuestAsync);
 
 //Cancel
-app.MapPost("/api/quests/cancel", async (HttpContext context, Guid taskId, Guid personId) =>
-{
-
-});
+app.MapPost("/api/quests/cancel", controllers.Quests.CancelQuestAsync);
 
 //Report
 app.MapPost("/api/reviews/reportTask", async (HttpContext context, Ticket persone, Guid personId) =>
@@ -108,7 +101,6 @@ app.MapPost("/api/reviews/undoTaskAdminPanel", async (HttpContext context, Guid 
 {
 
 });
-
 
 
 

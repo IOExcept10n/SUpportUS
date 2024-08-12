@@ -3,17 +3,19 @@ using SupportUS.Web.Models;
 
 namespace SupportUS.Web.Data
 {
-    public class AppDbContext : DbContext
+    public class QuestsDb : DbContext
     {
         public DbSet<Profile> Profiles { get; set; }
 
-        public DbSet<Quest> Quests {  get; set; }
+        public DbSet<Quest> Quests { get; set; }
 
         public DbSet<Review> Reviews { get; set; }
 
+        public DbSet<Ticket> Tickets { get; set; }
+
         public string DbPath { get; }
 
-        public AppDbContext()
+        public QuestsDb()
         {
             var folder = Environment.SpecialFolder.LocalApplicationData;
             var path = Environment.GetFolderPath(folder);
@@ -22,5 +24,15 @@ namespace SupportUS.Web.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
             optionsBuilder.UseSqlite($"Data Source={DbPath}");
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Profile>()
+                .HasMany(p => p.CreatedQuests)
+                .WithOne(y => y.Customer);
+            modelBuilder.Entity<Profile>()
+                .HasMany(p => p.CompletedQuests)
+                .WithOne(q => q.Executor);
+        }
     }
 }
