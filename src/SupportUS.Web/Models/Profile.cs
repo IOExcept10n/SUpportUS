@@ -11,13 +11,15 @@
             Premium
         }
 
-        public Guid Id { get; set; }
+        public long Id { get; set; }
 
         public string Name { get; set; }
 
         public List<Quest> CreatedTasks { get; set; }
 
         public List<Quest> CompletedTasks { get; set; }
+
+        public List<Quest> CurrentTasks { get; set; }
 
         public int Coins { get; set; }
 

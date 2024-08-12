@@ -69,4 +69,5 @@
                                    string? Location, 
                                    TimeSpan? ExpectedDuration,
                                    DateTime? Deadline);
+
 }
