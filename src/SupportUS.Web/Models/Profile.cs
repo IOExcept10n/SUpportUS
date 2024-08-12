@@ -5,7 +5,7 @@
         public enum UserStatus
         {
             Admin,
-            Banned,//
+            Banned,
             Basic,
             Developer,
             Premium
@@ -17,7 +17,7 @@
 
         public List<Quest> CreatedTasks { get; set; }
 
-        public List<Quest> CurrentTasks { get; set; }
+        public List<Quest> CompletedTasks { get; set; }
 
         public int Coins { get; set; }
 

@@ -1,6 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using SupportUS.Web.Controllers;
 using SupportUS.Web.Data;
+using SupportUS.Web.Models;
+using System.Drawing;
 using System.Net.Sockets;
+using System.Text.Json.Nodes;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<AppDbContext>();
@@ -18,46 +23,27 @@ app.MapGet("/", async context =>
 });
 
 // API
-
+var controllers = new APIControllers();
 // Tasks
-app.MapGet("/api/tasks/find-task-by-id", async (HttpContext context, Guid id) =>
-{
-    var db = app.Services.GetRequiredService<AppDbContext>();
-    var task = await db.Quests.FindAsync(id);
-    var result = new
-    {
-        Found = task != null,
-        Task = task
-    };
-    await context.Response.WriteAsJsonAsync(result);
-});
+app.MapGet("/api/quests/find-by-id", controllers.Quests.FindQuestById);
 
 //Create
-app.MapPost("/api/reviews/createTaskv", async (HttpContext context, string authorName, string description, int coins) =>
-{
-
-});
+app.MapPost("/api/quests/create", controllers.Quests.CreateQuest);
 
 //Update
-app.MapPost("/api/reviews/updateTask", async (HttpContext context, Guid taskId, string description, int coins) =>
-{
-
-});
+app.MapPut("/api/quests/update", controllers.Quests.UpdateQuest);
 
 //Delete
-app.MapPost("/api/reviews/deleteTask", async (HttpContext context, Guid taskId) =>
-{
-
-});
+app.MapDelete("/api/quests/delete", controllers.Quests.DeleteQuest);
 
 //Take
-app.MapPost("/api/reviews/takeTask", async (HttpContext context, Guid taskId, Guid workerId) =>
+app.MapPost("/api/quests/take", async (HttpContext context, Guid taskId, Guid workerId) =>
 {
 
 });
 
 //Cancel
-app.MapPost("/api/reviews/cancelTask", async (HttpContext context, Guid taskId, Guid personId) =>
+app.MapPost("/api/quests/cancel", async (HttpContext context, Guid taskId, Guid personId) =>
 {
 
 });
