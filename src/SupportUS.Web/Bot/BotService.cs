@@ -81,12 +81,18 @@ namespace SupportUS.Web.Bot
                 switch (msg.Text)
                 {
                     case "Проверить статус заданий 👽":
-                        string TaskText = "fssdsdsfsf";
+                        string TaskText = "Есть короче квест - съешь хотдог за 200 югрошей, задание выполнять строго на территории 434 аудитории 3бв, мёртвая линия - 3 минуты";
                         var inlineMarkup = new InlineKeyboardMarkup()
                         .AddNewRow().AddButton("Подтвердить выполнения задания ✔️", "Done")
                         .AddNewRow().AddButton("Отменить задание ❌", "Canceled");
                         await Client.SendTextMessageAsync(msg.Chat, TaskText, replyMarkup: inlineMarkup);
                         break;
+
+                    case "Создать задание 🍑":
+                        //какая-то функция
+                        break;
+
+
                 }
             }
 
@@ -96,7 +102,9 @@ namespace SupportUS.Web.Bot
                 switch (command)
                 {
                     case "/start":
-                        var replyMarkup = new ReplyKeyboardMarkup(true).AddNewRow().AddButton("Проверить статус заданий 👽");
+                        var replyMarkup = new ReplyKeyboardMarkup(true)
+                            .AddNewRow().AddButton("Проверить статус заданий 👽")
+                            .AddButton("Создать задание 🍑");
                         await Client.SendTextMessageAsync(msg.Chat, "Keyboard buttons:", replyMarkup: replyMarkup);
                         break;
                 }
