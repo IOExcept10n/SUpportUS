@@ -27,12 +27,15 @@ namespace SupportUS.Web.Bot
 
         public CancellationTokenSource BotTokenSource { get; }
 
+        public HttpClient Http { get; }
+
         public BotService(BotConfig config)
         {
             token = config.Token;
             WorkingChat = config.WorkingChatId;
             BotTokenSource = new CancellationTokenSource();
-            Client = new TelegramBotClient(token, cancellationToken: BotTokenSource.Token);
+            Http = new HttpClient();
+            Client = new TelegramBotClient(token, Http, cancellationToken: BotTokenSource.Token);
         }
 
         public async Task InitializeAsync(WebApplication app)

@@ -69,7 +69,7 @@ namespace SupportUS.Web.Bot
                     break;
 
                 case "Создать задание 🍑":
-                    Bot.QuestService.CreateQuest(msg);
+                    await Bot.QuestService.CreateQuest(msg);
                     break;
             }
         }
@@ -82,6 +82,12 @@ namespace SupportUS.Web.Bot
                 case "/start":
                     var replyMarkup = new ReplyKeyboardMarkup(true).AddNewRow().AddButton("Проверить статус заданий 👽").AddButton("Создать задание 🍑");
                     await Bot.Client.SendTextMessageAsync(msg.Chat, "Keyboard buttons:", replyMarkup: replyMarkup);
+                    var response = await Bot.Http.PostAsync($"https://localhost:7158/api/profiles/create?id={msg.From!.Id}", null);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        await Bot.Client.SendTextMessageAsync(msg.Chat.Id, "Не удалось зарегистрировать пользователя.");
+                        return;
+                    }
                     break;
             }
         }

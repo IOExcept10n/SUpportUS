@@ -14,7 +14,8 @@ namespace SupportUS.Web.Bot
                 return;
             await Bot.Client.SendTextMessageAsync(
                 msg.Chat.Id,
-                GenerateMessageText(quest));
+                GenerateMessageText(quest),
+                parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
 
         private async Task<Quest?> DraftQuestAsync(Message msg)
@@ -25,6 +26,7 @@ namespace SupportUS.Web.Bot
             {
                 await Bot.Client.SendTextMessageAsync(msg.Chat.Id,
                                                       "Вы не зарегистрированы. Нажмите /start для начала работы.",
+                                                      parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2,
                                                       replyParameters: new() { MessageId = msg.MessageId });
                 return null;
             }
