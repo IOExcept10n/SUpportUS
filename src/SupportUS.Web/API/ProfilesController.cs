@@ -2,7 +2,7 @@
 using SupportUS.Web.Data;
 using SupportUS.Web.Models;
 
-namespace SupportUS.Web.Controllers
+namespace SupportUS.Web.API
 {
     public class ProfilesController(WebApplication app, APIControllers controllers)
         : ControllerBase(app, controllers)

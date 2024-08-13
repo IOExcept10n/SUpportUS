@@ -1,6 +1,6 @@
 ﻿using SupportUS.Web.Data;
 
-namespace SupportUS.Web.Controllers
+namespace SupportUS.Web.API
 {
     public class ControllerBase(WebApplication app, APIControllers controllers)
     {

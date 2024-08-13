@@ -1,6 +1,6 @@
 ﻿using SupportUS.Web.Models;
 
-namespace SupportUS.Web.Controllers
+namespace SupportUS.Web.API
 {
     public class ReviewsController(WebApplication app, APIControllers controllers)
         : ControllerBase(app, controllers)

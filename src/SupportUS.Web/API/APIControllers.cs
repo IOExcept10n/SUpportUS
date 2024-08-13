@@ -1,4 +1,4 @@
-﻿namespace SupportUS.Web.Controllers
+﻿namespace SupportUS.Web.API
 {
     public class APIControllers
     {

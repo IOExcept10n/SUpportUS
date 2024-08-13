@@ -3,7 +3,7 @@ using SupportUS.Web.Data;
 using SupportUS.Web.Models;
 using System.Runtime;
 
-namespace SupportUS.Web.Controllers
+namespace SupportUS.Web.API
 {
     public class QuestsController(WebApplication app, APIControllers controllers) 
         : ControllerBase(app, controllers)
