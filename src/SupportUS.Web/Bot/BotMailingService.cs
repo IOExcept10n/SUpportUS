@@ -22,7 +22,11 @@ namespace SupportUS.Web.Bot
             var inlineMarkup = new InlineKeyboardMarkup()
                 .AddNewRow().AddButton("Взять задание ✔️", "Done")
                 .AddNewRow().AddButton("Скрыть задание ❌", "Canceled");
+<<<<<<< Updated upstream
             await Bot.Client.SendTextMessageAsync(msg.Chat, Bot.QuestService.GenerateMessageText(quest), replyMarkup: inlineMarkup);
+=======
+            await Bot.Client.SendTextMessageAsync(msg.Chat,Bot.QuestService.GenerateMessageText(quest), replyMarkup: inlineMarkup);
+>>>>>>> Stashed changes
         }
     }
 }
