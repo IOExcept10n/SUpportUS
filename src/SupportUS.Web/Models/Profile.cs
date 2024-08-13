@@ -14,6 +14,17 @@ namespace SupportUS.Web.Models
             Premium
         }
 
+        public enum CreationQuestStatus
+        {
+            None,
+            Name,
+            Description,
+            Location,
+            Price, 
+            ExpectedDuration,
+            Deadline
+        }
+
         public long Id { get; set; }
 
         [JsonConverter(typeof(QuestListShortConverter))]
@@ -25,6 +36,8 @@ namespace SupportUS.Web.Models
         public int Coins { get; set; }
 
         public double Rating { get; set; }
+
+        public CreationQuestStatus QuestStatus { get; set; }
 
         public ProfileStatus Status { get; set; }
     }
