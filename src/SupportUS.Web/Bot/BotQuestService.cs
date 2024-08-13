@@ -1,4 +1,7 @@
-﻿using Telegram.Bot.Types;
+﻿using SupportUS.Web.Data;
+using SupportUS.Web.Models;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace SupportUS.Web.Bot
 {
@@ -6,6 +9,57 @@ namespace SupportUS.Web.Bot
     {
         public async Task CreateQuest(Message msg)
         {
+            var quest = await DraftQuestAsync(msg);
+            if (quest == null)
+                return;
+            await Bot.Client.SendTextMessageAsync(
+                msg.Chat.Id,
+                GenerateMessageText(quest));
+        }
+
+        private async Task<Quest?> DraftQuestAsync(Message msg)
+        {
+            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            var customer = db.Profiles.Find(msg.From?.Id);
+            if (customer == null)
+            {
+                await Bot.Client.SendTextMessageAsync(msg.Chat.Id,
+                                                      "Вы не зарегистрированы. Нажмите /start для начала работы.",
+                                                      replyToMessageId: msg.MessageId);
+                return null;
+            }
+            var quest = new Quest()
+            {
+                Id = Guid.NewGuid(),
+                Customer = customer,
+                CustomerId = customer.Id
+            };
+            await db.Quests.AddAsync(quest);
+            await db.SaveChangesAsync();
+            // TODO: mail quest.
+            return quest;
+        }
+
+        internal string GenerateMessageText(Quest quest)
+        {
+            string state = quest.Status switch
+            {
+                Quest.QuestStatus.Draft => "📝 **Задание** (черновик)",
+                Quest.QuestStatus.Opened => "📄 **Задание**",
+                Quest.QuestStatus.InProgress => "🔄 **Задание** (выполняется)",
+                Quest.QuestStatus.Completed => "✅ **Задание** (выполнено)",
+                Quest.QuestStatus.Cancelled => "❌ **Задание** (отменено)",
+                _ => "📄 **Задание**",
+            };
+            return @$"
+{state}
+**Название**: {quest.Name ?? "-"},
+**Описание**: {quest.Description ?? "-"},
+**Стоимость**: {quest.Price},
+**Местоположение**: {quest.Location ?? "-"},
+**Длительность**: {quest.ExpectedDuration?.ToString() ?? "-"},
+**Дедлайн**: {quest.Deadline?.ToString() ?? "-"}
+";
         }
     }
 }

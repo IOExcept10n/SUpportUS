@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using Newtonsoft.Json;
+using Telegram.Bot;
 
 namespace SupportUS.Web.Bot
 {
@@ -18,9 +19,12 @@ namespace SupportUS.Web.Bot
 
         public BotQuestService QuestService { get; }
 
-        public BotService(WebApplication app, string token)
+        public long WorkingChat { get; }
+
+        public BotService(WebApplication app, BotConfig config)
         {
-            this.token = token;
+            token = config.Token;
+            WorkingChat = config.WorkingChatId;
             Application = app;
             Client = new TelegramBotClient(token);
             AdminService = new(this, app);
