@@ -13,7 +13,8 @@ builder.Services
     .AddSingleton<BotService>();
 var app = builder.Build();
 
-await app.Services.GetRequiredService<BotService>().InitializeAsync(app);
+var bot = app.Services.GetRequiredService<BotService>();
+await bot.InitializeAsync(app);
 
 app.MapGet("/", async context =>
 {
@@ -91,3 +92,4 @@ app.MapGet("/api/profiles/find-by-id", controllers.Profiles.GetProfileByIdAsync)
 //});
 
 app.Run();
+bot.BotTokenSource.Cancel();
