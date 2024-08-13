@@ -1,4 +1,5 @@
 ﻿using SupportUS.Web.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace SupportUS.Web.Models
@@ -49,9 +50,15 @@ namespace SupportUS.Web.Models
 
         public DateTime CreationDate { get; set; }
 
+        [ForeignKey(nameof(ExecutorReviewId))]
         public Review? ExecutorReview { get; set; }
 
+        public Guid ExecutorReviewId { get; set; }
+
+        [ForeignKey(nameof(CustomerReviewId))]
         public Review? CustomerReview { get; set; }
+
+        public Guid CustomerReviewId { get; set; }
 
         [JsonConverter(typeof(ProfileShortConverter))]
         public Profile? Executor { get; set; }

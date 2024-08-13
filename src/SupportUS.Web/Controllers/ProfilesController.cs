@@ -7,7 +7,7 @@ namespace SupportUS.Web.Controllers
     public class ProfilesController(WebApplication app, APIControllers controllers)
         : ControllerBase(app, controllers)
     {
-        public async Task GetProfileById(HttpContext context, long id)
+        public async Task GetProfileByIdAsync(HttpContext context, long id)
         {
             using var db = GetDbContext();
             var profile = db.Profiles.Find(id);
