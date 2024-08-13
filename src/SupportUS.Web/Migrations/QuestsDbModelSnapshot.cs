@@ -10,7 +10,7 @@ using SupportUS.Web.Data;
 namespace SupportUS.Web.Migrations
 {
     [DbContext(typeof(QuestsDb))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    partial class QuestsDbModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -49,7 +49,7 @@ namespace SupportUS.Web.Migrations
                     b.Property<long>("CustomerId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("CustomerReviewId")
+                    b.Property<Guid?>("CustomerReviewId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("Deadline")
@@ -62,7 +62,7 @@ namespace SupportUS.Web.Migrations
                     b.Property<long?>("ExecutorId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ExecutorReviewId")
+                    b.Property<Guid?>("ExecutorReviewId")
                         .HasColumnType("TEXT");
 
                     b.Property<TimeSpan?>("ExpectedDuration")
@@ -146,9 +146,7 @@ namespace SupportUS.Web.Migrations
 
                     b.HasOne("SupportUS.Web.Models.Review", "CustomerReview")
                         .WithMany()
-                        .HasForeignKey("CustomerReviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerReviewId");
 
                     b.HasOne("SupportUS.Web.Models.Profile", "Executor")
                         .WithMany("CompletedQuests")
@@ -156,9 +154,7 @@ namespace SupportUS.Web.Migrations
 
                     b.HasOne("SupportUS.Web.Models.Review", "ExecutorReview")
                         .WithMany()
-                        .HasForeignKey("ExecutorReviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ExecutorReviewId");
 
                     b.Navigation("Customer");
 

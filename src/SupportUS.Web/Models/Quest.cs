@@ -31,8 +31,11 @@ namespace SupportUS.Web.Models
 
         public Guid Id { get; set; }
 
+        [ForeignKey(nameof(CustomerId))]
         [JsonConverter(typeof(ProfileShortConverter))]
         public required Profile Customer { get; set; }
+
+        public long CustomerId { get; set; }
 
         public required string Name { get; set; }
 
@@ -53,15 +56,18 @@ namespace SupportUS.Web.Models
         [ForeignKey(nameof(ExecutorReviewId))]
         public Review? ExecutorReview { get; set; }
 
-        public Guid ExecutorReviewId { get; set; }
+        public Guid? ExecutorReviewId { get; set; }
 
         [ForeignKey(nameof(CustomerReviewId))]
         public Review? CustomerReview { get; set; }
 
-        public Guid CustomerReviewId { get; set; }
+        public Guid? CustomerReviewId { get; set; }
 
+        [ForeignKey(nameof(ExecutorId))]
         [JsonConverter(typeof(ProfileShortConverter))]
         public Profile? Executor { get; set; }
+
+        public long? ExecutorId { get; set; }
 
         public void ApplyInfo(QuestInfo info)
         {
@@ -76,7 +82,7 @@ namespace SupportUS.Web.Models
     }
 
     public record struct QuestInfo(Guid? Id,
-                                   Guid? CustomerId,
+                                   long? CustomerId,
                                    string? Name,
                                    string? Description,
                                    int? Price,

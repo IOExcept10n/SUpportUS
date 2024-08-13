@@ -1,5 +1,4 @@
 ﻿using SupportUS.Web.Data;
-using System.Diagnostics.CodeAnalysis;
 
 namespace SupportUS.Web.Controllers
 {

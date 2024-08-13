@@ -16,10 +16,10 @@ namespace SupportUS.Web.Models
 
         public long Id { get; set; }
 
-        [JsonConverter(typeof(QuestShortConverter))]
+        [JsonConverter(typeof(QuestListShortConverter))]
         public List<Quest> CreatedQuests { get; set; } = [];
 
-        [JsonConverter(typeof(QuestShortConverter))]
+        [JsonConverter(typeof(QuestListShortConverter))]
         public List<Quest> CompletedQuests { get; set; } = [];
 
         public int Coins { get; set; }

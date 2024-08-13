@@ -11,8 +11,8 @@ using SupportUS.Web.Data;
 namespace SupportUS.Web.Migrations
 {
     [DbContext(typeof(QuestsDb))]
-    [Migration("20240812133531_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240813101415_Iteration2")]
+    partial class Iteration2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,16 +22,12 @@ namespace SupportUS.Web.Migrations
 
             modelBuilder.Entity("SupportUS.Web.Models.Profile", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Coins")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.Property<double>("Rating")
                         .HasColumnType("REAL");
@@ -53,8 +49,8 @@ namespace SupportUS.Web.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("TEXT");
+                    b.Property<long>("CustomerId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<Guid?>("CustomerReviewId")
                         .HasColumnType("TEXT");
@@ -66,8 +62,8 @@ namespace SupportUS.Web.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ExecutorId")
-                        .HasColumnType("TEXT");
+                    b.Property<long?>("ExecutorId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<Guid?>("ExecutorReviewId")
                         .HasColumnType("TEXT");
@@ -108,12 +104,18 @@ namespace SupportUS.Web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("TEXT");
+                    b.Property<long>("AuthorId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<Guid>("QuestId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

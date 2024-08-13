@@ -62,7 +62,7 @@ app.MapPost("/api/profiles/create", controllers.Profiles.CreateProfileAsync);
 
 app.MapPost("/api/profiles/reportProfile", controllers.Profiles.ReportProfileAsync);
 
-app.MapGet("/api/profiles/get-by-id", controllers.Profiles.GetProfileByIdAsync);
+app.MapGet("/api/profiles/find-by-id", controllers.Profiles.GetProfileByIdAsync);
 
 //AdminPanel
 //app.MapPost("/api/reviews/banAdminPanel", async (HttpContext context, Guid idPersone, Ticket ticketReasone) =>

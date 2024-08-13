@@ -15,8 +15,8 @@ namespace SupportUS.Web.Migrations
                 name: "Profiles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Coins = table.Column<int>(type: "INTEGER", nullable: false),
                     Rating = table.Column<double>(type: "REAL", nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false)
@@ -43,8 +43,10 @@ namespace SupportUS.Web.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AuthorId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Content = table.Column<string>(type: "TEXT", nullable: false)
+                    AuthorId = table.Column<long>(type: "INTEGER", nullable: false),
+                    Content = table.Column<string>(type: "TEXT", nullable: false),
+                    QuestId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Rating = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -62,7 +64,7 @@ namespace SupportUS.Web.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    CustomerId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CustomerId = table.Column<long>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
@@ -73,7 +75,7 @@ namespace SupportUS.Web.Migrations
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     ExecutorReviewId = table.Column<Guid>(type: "TEXT", nullable: true),
                     CustomerReviewId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    ExecutorId = table.Column<Guid>(type: "TEXT", nullable: true)
+                    ExecutorId = table.Column<long>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {

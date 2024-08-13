@@ -78,7 +78,7 @@ namespace SupportUS.Web.Controllers
                 await context.Response.WriteAsync("Quest not found.");
                 return;
             }
-            if (quest.Customer.Id != customerId)
+            if (quest.CustomerId != customerId)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await context.Response.WriteAsync("Cannot delete task when you're not its customer.");
