@@ -25,7 +25,7 @@ namespace SupportUS.Web.Bot
             {
                 await Bot.Client.SendTextMessageAsync(msg.Chat.Id,
                                                       "Вы не зарегистрированы. Нажмите /start для начала работы.",
-                                                      replyToMessageId: msg.MessageId);
+                                                      replyParameters: new() { MessageId = msg.MessageId });
                 return null;
             }
             var quest = new Quest()

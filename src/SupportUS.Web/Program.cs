@@ -1,14 +1,19 @@
-using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SupportUS.Web.API;
+using SupportUS.Web.Bot;
 using SupportUS.Web.Data;
-using SupportUS.Web.Models;
-using System.Drawing;
-using System.Net.Sockets;
-using System.Text.Json.Nodes;
+
+string botConfigText = File.ReadAllText("botConfig.json");
+var config = JsonConvert.DeserializeObject<BotConfig>(botConfigText);
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddTransient<QuestsDb>();
+builder.Services
+    .AddTransient<QuestsDb>()
+    .AddSingleton(config!)
+    .AddSingleton<BotService>();
 var app = builder.Build();
+
+await app.Services.GetRequiredService<BotService>().InitializeAsync(app);
 
 app.MapGet("/", async context =>
 {
@@ -45,7 +50,7 @@ app.MapPost("/api/quests/cancel", controllers.Quests.CancelQuestAsync);
 app.MapPost("/api/quests/report", () => { });
 
 //Complete
-app.MapPost("/api/quests/complete", () => { });
+app.MapPost("/api/quests/complete", controllers.Quests.CompleteQuestAsync);
 
 // Reviews
 app.MapPost("/api/reviews/publish", controllers.Reviews.PublishReviewAsync);
