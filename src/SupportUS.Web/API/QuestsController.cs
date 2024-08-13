@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
-using SupportUS.Web.Data;
-using SupportUS.Web.Models;
-using System.Runtime;
+﻿using SupportUS.Web.Models;
 
 namespace SupportUS.Web.API
 {
@@ -38,8 +35,15 @@ namespace SupportUS.Web.API
                 await TellClientErrorAsync(context, "Some of required params are null. Name, description, price and location are required.", StatusCodes.Status400BadRequest);
                 return;
             }
+            if (customer.Coins < info.Price)
+            {
+                await TellClientErrorAsync(context, "Customer doesn't have enough money to open quest.");
+                return;
+            }
             var quest = Quest.CreateQuest(customer, info.Name, info.Description, info.Price.Value, info.Location);
             quest.ApplyInfo(info);
+            quest.Status = Quest.QuestStatus.Opened;
+            customer.CreatedQuests.Add(quest);
             await db.Quests.AddAsync(quest);
             await db.SaveChangesAsync();
             await context.Response.WriteAsJsonAsync(quest);
@@ -135,6 +139,43 @@ namespace SupportUS.Web.API
                 return;
             }
             quest.Status = Quest.QuestStatus.Cancelled;
+            await db.SaveChangesAsync();
+        }
+
+        public async Task CompleteQuestAsync(HttpContext context, Guid questId, long customerId)
+        {
+            using var db = GetDbContext();
+            var quest = await db.Quests.FindAsync(questId);
+            if (quest == null)
+            {
+                await TellNotFoundAsync(context, nameof(quest));
+                return;
+            }
+            if (quest.Status != Quest.QuestStatus.InProgress)
+            {
+                await TellClientErrorAsync(context, "Cannot mark as completed quest that is not in progress.");
+                return;
+            }
+            if (quest.CustomerId != customerId)
+            {
+                await TellClientErrorAsync(context, "Cannot mark as completed quest that is not owned by you.");
+                return;
+            }
+            var customer = await db.Profiles.FindAsync(customerId);
+            if (customer == null)
+            {
+                await TellNotFoundAsync(context, nameof(customer));
+                return;
+            }
+            var executor = await db.Profiles.FindAsync(quest.ExecutorId);
+            if (executor == null)
+            {
+                await TellNotFoundAsync(context, nameof(executor));
+                return;
+            }
+            executor.CompletedQuests.Add(quest);
+            executor.Coins += quest.Price;
+            quest.Status = Quest.QuestStatus.Completed;
             await db.SaveChangesAsync();
         }
     }
