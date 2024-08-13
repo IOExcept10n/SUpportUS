@@ -55,21 +55,21 @@ namespace SupportUS.Web.Bot
         {
             string state = quest.Status switch
             {
-                Quest.QuestStatus.Draft => "📝 **Задание** (черновик)",
+                Quest.QuestStatus.Draft => "📝 **Задание** \\(черновик\\)",
                 Quest.QuestStatus.Opened => "📄 **Задание**",
-                Quest.QuestStatus.InProgress => "🔄 **Задание** (выполняется)",
-                Quest.QuestStatus.Completed => "✅ **Задание** (выполнено)",
-                Quest.QuestStatus.Cancelled => "❌ **Задание** (отменено)",
+                Quest.QuestStatus.InProgress => "🔄 **Задание** \\(выполняется\\)",
+                Quest.QuestStatus.Completed => "✅ **Задание** \\(выполнено\\)",
+                Quest.QuestStatus.Cancelled => "❌ **Задание** \\(отменено\\)",
                 _ => "📄 **Задание**",
             };
             return @$"
 {state}
-**Название**: {quest.Name ?? "-"},
-**Описание**: {quest.Description ?? "-"},
+**Название**: {quest.Name ?? "\\-"},
+**Описание**: {quest.Description ?? "\\-"},
 **Стоимость**: {quest.Price},
-**Местоположение**: {quest.Location ?? "-"},
-**Длительность**: {quest.ExpectedDuration?.ToString() ?? "-"},
-**Дедлайн**: {quest.Deadline?.ToString() ?? "-"}
+**Местоположение**: {quest.Location ?? "\\-"},
+**Длительность**: {quest.ExpectedDuration?.ToString() ?? "\\-"},
+**Дедлайн**: {quest.Deadline?.ToString() ?? "\\-"}
 ";
         }
     }
