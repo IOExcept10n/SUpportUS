@@ -20,9 +20,25 @@ namespace SupportUS.Web.Bot
         public async Task MailMessageQuest(Quest quest)
         {
             var inlineMarkup = new InlineKeyboardMarkup()
-                .AddNewRow().AddButton("Взять задание ✔️", "Done")
-                .AddNewRow().AddButton("Скрыть задание ❌", "Canceled");
+                .AddNewRow().AddButton("Взять задание ✔️", "GetQuest")
+                .AddNewRow().AddButton("Скрыть задание ❌", "CanceledQuest");
             await Bot.Client.SendTextMessageAsync(Bot.WorkingChat, BotQuestService.GenerateMessageText(quest), replyMarkup: inlineMarkup);
+        }
+
+        private async Task OnCallbackQueryMail(CallbackQuery callbackQuery)
+        {
+            await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, $"You selected {callbackQuery.Data}");
+            switch (callbackQuery.Data)
+            {
+                case "GetQuest":
+                    await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
+                    //
+                    break;
+
+                case "CancledQuest":
+                    await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
+                    break;
+            }
         }
     }
 }
