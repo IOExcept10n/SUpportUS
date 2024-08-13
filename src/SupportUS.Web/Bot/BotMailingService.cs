@@ -17,12 +17,12 @@ namespace SupportUS.Web.Bot
             await Bot.Client.SendTextMessageAsync(chatId, msgText);
         }
 
-        public async Task MailMessageQuest(Message msg, Quest quest)
+        public async Task MailMessageQuest(Quest quest)
         {
             var inlineMarkup = new InlineKeyboardMarkup()
                 .AddNewRow().AddButton("Взять задание ✔️", "Done")
                 .AddNewRow().AddButton("Скрыть задание ❌", "Canceled");
-            await Bot.Client.SendTextMessageAsync(msg.Chat, Bot.QuestService.GenerateMessageText(quest), replyMarkup: inlineMarkup);
+            await Bot.Client.SendTextMessageAsync(Bot.WorkingChat, BotQuestService.GenerateMessageText(quest), replyMarkup: inlineMarkup);
         }
     }
 }

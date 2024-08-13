@@ -1,4 +1,5 @@
-﻿using SupportUS.Web.Models;
+﻿using SupportUS.Web.Bot;
+using SupportUS.Web.Models;
 
 namespace SupportUS.Web.API
 {
@@ -46,6 +47,7 @@ namespace SupportUS.Web.API
             customer.CreatedQuests.Add(quest);
             await db.Quests.AddAsync(quest);
             await db.SaveChangesAsync();
+            Application.Services.GetService<BotService>()?.MailingService.MailMessageQuest(quest);
             await context.Response.WriteAsJsonAsync(quest);
         }
 

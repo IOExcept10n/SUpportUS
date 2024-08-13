@@ -36,11 +36,20 @@ namespace SupportUS.Web.Bot
             };
             await db.Quests.AddAsync(quest);
             await db.SaveChangesAsync();
-            // TODO: mail quest.
             return quest;
         }
 
-        internal string GenerateMessageText(Quest quest)
+        public async Task EditQuest(Message message)
+        {
+
+        }
+
+        public async Task StartEditQuest(Message message)
+        {
+
+        }
+
+        internal static string GenerateMessageText(Quest quest)
         {
             string state = quest.Status switch
             {
