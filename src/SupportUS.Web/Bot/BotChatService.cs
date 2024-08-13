@@ -67,6 +67,10 @@ namespace SupportUS.Web.Bot
                     .AddNewRow().AddButton("Отменить задание ❌", "Canceled");
                     await Bot.Client.SendTextMessageAsync(msg.Chat, TaskText, replyMarkup: inlineMarkup);
                     break;
+
+                case "Создать задание 🍑":
+                    Bot.QuestService.CreateQuest(msg);
+                    break;
             }
         }
 
@@ -76,7 +80,7 @@ namespace SupportUS.Web.Bot
             switch (command)
             {
                 case "/start":
-                    var replyMarkup = new ReplyKeyboardMarkup(true).AddNewRow().AddButton("Проверить статус заданий 👽");
+                    var replyMarkup = new ReplyKeyboardMarkup(true).AddNewRow().AddButton("Проверить статус заданий 👽").AddButton("Создать задание 🍑");
                     await Bot.Client.SendTextMessageAsync(msg.Chat, "Keyboard buttons:", replyMarkup: replyMarkup);
                     break;
             }
