@@ -176,9 +176,24 @@ namespace SupportUS.Web.Bot
                     await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.ExpectedDuration);
                     break;
                 case "QuestPublish":
-                    //
+                    await PublishQuest(callbackQuery.Message);
                     break;
             }
+        }
+
+        public async Task TakeQuest(Message message)
+        {
+
+        }
+
+        public async Task CompleteQuest(Message message)
+        {
+
+        }
+
+        public async Task PublishQuest(Message message)
+        {
+
         }
 
         private async Task UpdateProperty(CallbackQuery callbackQuery, QuestsDb db, Profile.CreationQuestStatus status)
