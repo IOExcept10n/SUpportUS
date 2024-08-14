@@ -87,5 +87,32 @@ namespace SupportUS.Web.Bot
 **Дедлайн**: {quest.Deadline?.ToString() ?? "\\-"}
 ";
         }
+        private async Task OnCallbackQuests(CallbackQuery callbackQuery)
+        {
+            await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, $"You selected {callbackQuery.Data}");
+            switch (callbackQuery.Data)
+            {
+                case "QuestName":
+                {
+                    Message message = callbackQuery.Message;
+                    using var db = Application.Services.GetRequiredService<QuestsDb>();
+                    await Bot.Client.SendTextMessageAsync(callbackQuery.Message!.Chat, "Введите название квеста: ");
+                    var customer = db.Profiles.Find(message.From?.Id);
+                    if (customer == null)
+                    {
+                        await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "\"Вы не зарегистрированы. Нажмите /start для начала работы.");
+                        return;
+                    }
+                    if (customer.CurrentDraftQuest != null)
+                    {
+                        var quest = await db.Quests.FindAsync(customer.CurrentDraftQuest);
+                        quest.Name = message.Text;
+                            customer.QuestStatus = Profile.CreationQuestStatus.None;
+                    }
+                    await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
+                    break;
+                }       
+            }
+        }
     }
-}
+}               
