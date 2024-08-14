@@ -46,7 +46,14 @@ namespace SupportUS.Web.Bot
             var markup = new InlineKeyboardMarkup()
                 .AddNewRow().AddButton("✔️ Подтвердить выполнение", "QuestCompleted");
             var user = await Bot.Client.GetChatMemberAsync(quest.ExecutorId, quest.ExecutorId.Value);
-            await Bot.Client.SendTextMessageAsync(quest.CustomerId, $"✔️ Пользователь @{user.User.Username} начал выполнение вашей задачи.");
+            var message = await Bot.Client.SendTextMessageAsync(quest.CustomerId, $"✔️ Пользователь @{user.User.Username} начал выполнение вашей задачи.", replyMarkup: markup);
+            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            quest.BotMessageId = message.MessageId;
+            db.Update(quest);
+            await db.SaveChangesAsync();
+            var cancelMarkup = new InlineKeyboardMarkup()
+                .AddNewRow().AddButton("⚔️ Отменить квест", "QuestCancelled");
+            await Bot.Client.SendTextMessageAsync(quest.ExecutorId.Value, $"Вы приняли квест '{quest.Name}'", replyMarkup: cancelMarkup);
         }
 
         public async Task MailQuestCompleted(Quest quest)
@@ -56,7 +63,7 @@ namespace SupportUS.Web.Bot
             await Bot.Client.SendTextMessageAsync(quest.ExecutorId.Value, $"✔️ Квест успешно выполнен!");
         }
 
-        private async Task OnCallbackQueryMail(CallbackQuery callbackQuery)
+        internal async Task OnCallbackQueryMail(CallbackQuery callbackQuery)
         {
             switch (callbackQuery.Data)
             {
@@ -64,7 +71,7 @@ namespace SupportUS.Web.Bot
                     await Bot.QuestService.TakeQuest(callbackQuery);
                     break;
 
-                case "CancledQuest":
+                case "QuestCancelled":
                     await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
                     break;
 

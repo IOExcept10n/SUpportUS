@@ -34,25 +34,29 @@ namespace SupportUS.Web.Bot
         {
             switch (update)
             {
-                case { CallbackQuery: { } callbackQuery }: await OnCallbackQuery(callbackQuery); break;
+                case { CallbackQuery: { } callbackQuery }:
+                    {
+                            await Bot.MailingService.OnCallbackQueryMail(callbackQuery);
+                            await Bot.QuestService.OnCallbackQuests(callbackQuery);
+                        break;
+                    }
                 default: Console.WriteLine($"Received unhandled update {update.Type}"); break;
             };
         }
 
-        private async Task OnCallbackQuery(CallbackQuery callbackQuery)
-        {
-            await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, $"You selected {callbackQuery.Data}");
-            switch (callbackQuery.Data)
-            {
-                case "Canceled":
-                    await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
-                    break;
+        //private async Task OnCallbackQuery(CallbackQuery callbackQuery)
+        //{
+        //    switch (callbackQuery.Data)
+        //    {
+        //        case "Canceled":
+        //            await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
+        //            break;
 
-                case "Done":
-                    await Bot.Client.SendTextMessageAsync(callbackQuery.Message!.Chat, "Doneeeeeeeee");
-                    break;
-            }
-        }
+        //        case "Done":
+        //            await Bot.Client.SendTextMessageAsync(callbackQuery.Message!.Chat, "Doneeeeeeeee");
+        //            break;
+        //    }
+        //}
 
         private async Task OnTextMessage(Message msg)
         {
@@ -72,11 +76,11 @@ namespace SupportUS.Web.Bot
             switch (msg.Text)
             {
                 case "Проверить статус заданий 👽":
-                    string TaskText = "fssdsdsfsf";
-                    var inlineMarkup = new InlineKeyboardMarkup()
-                    .AddNewRow().AddButton("Подтвердить выполнения задания ✔️", "Done")
-                    .AddNewRow().AddButton("Отменить задание ❌", "Canceled");
-                    await Bot.Client.SendTextMessageAsync(msg.Chat, TaskText, replyMarkup: inlineMarkup);
+                    //string TaskText = "fssdsdsfsf";
+                    //var inlineMarkup = new InlineKeyboardMarkup()
+                    //.AddNewRow().AddButton("Подтвердить выполнения задания ✔️", "Done")
+                    //.AddNewRow().AddButton("Отменить задание ❌", "Canceled");
+                    await Bot.Client.SendTextMessageAsync(msg.Chat, $"На данный момент вы не можете посмотреть статус своих заданий. На вашем счёте {customer.Coins} монет.");
                     break;
 
                 case "Создать задание 🍑":

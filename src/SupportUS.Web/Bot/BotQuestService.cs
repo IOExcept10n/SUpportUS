@@ -28,7 +28,7 @@ namespace SupportUS.Web.Bot
             var message = await Bot.Client.SendTextMessageAsync(
                 msg.Chat.Id,
                 GenerateMessageText(quest),
-                parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2, replyMarkup: inlineMarkup);
+                replyMarkup: inlineMarkup);
             quest.BotMessageId = message.MessageId;
             db.Update(quest);
             await db.SaveChangesAsync();
@@ -55,7 +55,10 @@ namespace SupportUS.Web.Bot
                 Customer = customer,
                 CustomerId = customer.Id,
             };
+            customer.CurrentDraftQuest = quest.Id;
+            db.Update(customer);
             await db.Quests.AddAsync(quest);
+            await db.SaveChangesAsync();
             return quest;
         }
 
@@ -88,6 +91,11 @@ namespace SupportUS.Web.Bot
                     {
                         if (int.TryParse(message.Text, out int price))
                         {
+                            if (quest.Price < 0)
+                            {
+                                await Bot.Client.SendTextMessageAsync(message.Chat.Id, "Нельзя ставить отрицательную сумму в стоимости.");
+                                return;
+                            }
                             if (profile.Coins < price)
                             {
                                 await Bot.Client.SendTextMessageAsync(message.Chat.Id, "У вас недостаточно средств для указания данной цены.");
@@ -137,24 +145,25 @@ namespace SupportUS.Web.Bot
         {
             string state = quest.Status switch
             {
-                Quest.QuestStatus.Draft => "📝 **Задание** \\(черновик\\)",
-                Quest.QuestStatus.Opened => "📄 **Задание**",
-                Quest.QuestStatus.InProgress => "🔄 **Задание** \\(выполняется\\)",
-                Quest.QuestStatus.Completed => "✅ **Задание** \\(выполнено\\)",
-                Quest.QuestStatus.Cancelled => "❌ **Задание** \\(отменено\\)",
-                _ => "📄 **Задание**",
+                Quest.QuestStatus.Draft => "📝 Задание (черновик)",
+                Quest.QuestStatus.Opened => "📄 Задание",
+                Quest.QuestStatus.InProgress => "🔄 Задание (выполняется)",
+                Quest.QuestStatus.Completed => "✅ Задание (выполнено)",
+                Quest.QuestStatus.Cancelled => "❌ Задание (отменено)",
+                _ => "📄 Задание",
             };
             return @$"
 {state}
-**Название**: {quest.Name ?? "\\-"},
-**Описание**: {quest.Description ?? "\\-"},
-**Стоимость**: {quest.Price},
-**Местоположение**: {(quest.Location == null ? "\\-" : '#' + quest.Location.Replace(' ', '_'))},
-**Длительность**: {quest.ExpectedDuration?.ToString() ?? "\\-"},
-**Дедлайн**: {quest.Deadline?.ToString() ?? "\\-"}
+Название: {quest.Name ?? "-"},
+Описание: {quest.Description ?? "-"},
+Стоимость: {quest.Price},
+Местоположение: {(quest.Location == null ? "-" : "#" + quest.Location.Replace(' ', '_').Replace("-", "-"))},
+Длительность: {quest.ExpectedDuration?.ToString() ?? "-"},
+Дедлайн: {quest.Deadline?.ToString() ?? "-"}
 ";
         }
-        private async Task OnCallbackQuests(CallbackQuery callbackQuery)
+
+        internal async Task OnCallbackQuests(CallbackQuery callbackQuery)
         {
             using var db = Application.Services.GetRequiredService<QuestsDb>();
             switch (callbackQuery.Data)
@@ -177,8 +186,8 @@ namespace SupportUS.Web.Bot
                 case "QuestDuration":
                     await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.ExpectedDuration);
                     break;
-                case "QuestPublish":
-                    await PublishQuest(callbackQuery.Message);
+                case "PublishQuest":
+                    await PublishQuest(callbackQuery);
                     break;
             }
         }
@@ -215,7 +224,7 @@ namespace SupportUS.Web.Bot
         public async Task CompleteQuest(CallbackQuery query)
         {
             using var db = Application.Services.GetRequiredService<QuestsDb>();
-            var quest = await db.Quests.FirstOrDefaultAsync(x => x.MailMessageId == query.Message!.MessageId);
+            var quest = await db.Quests.FirstOrDefaultAsync(x => x.BotMessageId == query.Message!.MessageId);
             if (quest == null)
             {
                 await Bot.Client.AnswerCallbackQueryAsync(query.Id, "Квест не найден в базе данных.");
@@ -238,34 +247,57 @@ namespace SupportUS.Web.Bot
             db.Update(executor);
             await db.SaveChangesAsync();
             await Bot.MailingService.UpdateMessageQuest(quest);
+            await Bot.Client.DeleteMessageAsync(quest.CustomerId, (int)quest.BotMessageId);
+            await Bot.Client.SendTextMessageAsync(quest.ExecutorId!.Value, $"Вы успешно выполнили квест '{quest.Name}'. Ваш текущий счёт: {executor.Coins}.");
         }
 
-        public async Task PublishQuest(Message message)
+        public async Task PublishQuest(CallbackQuery query)
         {
             using var db = Application.Services.GetRequiredService<QuestsDb>();
-            var customer = db.Profiles.Find(message.From?.Id);
+            var customer = db.Profiles.Find(query.From?.Id);
             if (customer == null)
             {
-                await Bot.Client.SendTextMessageAsync(message.Chat.Id,
+                await Bot.Client.SendTextMessageAsync(query.Message.Chat.Id,
                                                       "Вы не зарегистрированы. Нажмите /start для начала работы.",
                                                       parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2,
-                                                      replyParameters: new() { MessageId = message.MessageId });
+                                                      replyParameters: new() { MessageId = query.Message.MessageId });
                 return;
             }
             if (customer.CurrentDraftQuest != null)
-            { 
-                await db.Quests.FindAsync(customer.CurrentDraftQuest);
-                return;
-            }
-            Quest quest = await db.Quests.FindAsync(customer.CurrentDraftQuest);
-            if (customer.Coins < quest.Price)
             {
-
+                var quest = await db.Quests.FindAsync(customer.CurrentDraftQuest);
+                if (quest == null)
+                {
+                    await Bot.Client.SendTextMessageAsync(query.Message.Chat.Id,
+                                                          "Не удалось найти квест для публикации. Вы можете создать новый квест с помощью кнопки \"Создать квест\"",
+                                                          replyParameters: new() { MessageId = query.Message.MessageId });
+                    return;
+                }
+                if (quest.Name == null ||
+                    quest.Description == null ||
+                    quest.Price == 0 ||
+                    quest.Location == null)
+                {
+                    await Bot.Client.SendTextMessageAsync(query.Message.Chat.Id,
+                                                          "Некоторые обязательные параметры квеста не заполнены. Необходимо заполнить следующие свойства:\nНазвание\nОписание\nСтоимость\nМестоположение",
+                                                          replyParameters: new ReplyParameters() { MessageId = query.Message.MessageId });
+                    return;
+                }
+                if (customer.Coins < quest.Price)
+                {
+                    await Bot.Client.SendTextMessageAsync(query.Message.Chat.Id,
+                                                          "Недостаточно средств для публикации квеста. Измените стоимость в параметрах.",
+                                                          replyParameters: new ReplyParameters() { MessageId = query.Message.MessageId });
+                    return;
+                }
+                customer.Coins -= quest.Price;
+                quest.Status = Quest.QuestStatus.Opened;
+                db.Update(quest);
+                customer.CurrentDraftQuest = null;
+                db.Update(customer);
+                await db.SaveChangesAsync();
+                await Bot.MailingService.MailMessageQuest(quest);
             }
-            {
-                
-            }
-            await Bot.MailingService.MailMessageQuest(quest);
         }
 
         private async Task UpdateProperty(CallbackQuery callbackQuery, QuestsDb db, Profile.CreationQuestStatus status)
@@ -282,7 +314,7 @@ namespace SupportUS.Web.Bot
                 _ => "Введён неверный статус."
             };
             await Bot.Client.SendTextMessageAsync(callbackQuery.Message!.Chat, text);
-            var customer = db.Profiles.Find(message.From?.Id);
+            var customer = db.Profiles.Find(callbackQuery.From?.Id);
             if (customer == null)
             {
                 await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "\"Вы не зарегистрированы. Нажмите /start для начала работы.");
