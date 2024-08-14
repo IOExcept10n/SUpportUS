@@ -40,5 +40,7 @@ namespace SupportUS.Web.Models
         public CreationQuestStatus QuestStatus { get; set; }
 
         public ProfileStatus Status { get; set; }
+
+        public Guid? CurrentDraftQuest { get; set; }
     }
 }

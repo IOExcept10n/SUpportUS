@@ -10,7 +10,8 @@ namespace SupportUS.Web.Bot
     {
         public async Task CreateQuest(Message msg)
         {
-            var quest = await DraftQuestAsync(msg);
+            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            var quest = await DraftQuestAsync(msg, db);
             if (quest == null)
                 return;
             var inlineMarkup = new InlineKeyboardMarkup()
@@ -21,15 +22,17 @@ namespace SupportUS.Web.Bot
             .AddNewRow().AddButton("Длительность 🪐", "QuestDuration")
             .AddNewRow().AddButton("Дэдлайн🔋", "QuestDeadline")
             .AddNewRow().AddButton("Опубликовать квест 💅", "PublishQuest");
-            await Bot.Client.SendTextMessageAsync(
+            var message = await Bot.Client.SendTextMessageAsync(
                 msg.Chat.Id,
                 GenerateMessageText(quest),
                 parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2, replyMarkup: inlineMarkup);
+            quest.BotMessageId = message.MessageId;
+            db.Update(quest);
+            await db.SaveChangesAsync();
         }
 
-        private async Task<Quest?> DraftQuestAsync(Message msg)
+        private async Task<Quest?> DraftQuestAsync(Message msg, QuestsDb db)
         {
-            using var db = Application.Services.GetRequiredService<QuestsDb>();
             var customer = db.Profiles.Find(msg.From?.Id);
             if (customer == null)
             {
@@ -39,14 +42,17 @@ namespace SupportUS.Web.Bot
                                                       replyParameters: new() { MessageId = msg.MessageId });
                 return null;
             }
+            if (customer.CurrentDraftQuest != null)
+            {
+                return await db.Quests.FindAsync(customer.CurrentDraftQuest);
+            }
             var quest = new Quest()
             {
                 Id = Guid.NewGuid(),
                 Customer = customer,
-                CustomerId = customer.Id
+                CustomerId = customer.Id,
             };
             await db.Quests.AddAsync(quest);
-            await db.SaveChangesAsync();
             return quest;
         }
 
