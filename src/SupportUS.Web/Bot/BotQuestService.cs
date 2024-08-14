@@ -181,7 +181,7 @@ namespace SupportUS.Web.Bot
             }
         }
 
-        public async Task TakeQuest(Message message)
+        public async Task TakeQuest(Message message, User from)
         {
 
         }

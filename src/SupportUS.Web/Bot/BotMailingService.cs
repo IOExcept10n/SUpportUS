@@ -61,7 +61,7 @@ namespace SupportUS.Web.Bot
             switch (callbackQuery.Data)
             {
                 case "GetQuest":
-                    //await Bot.QuestService.TakeQuest(callbackQuery.Message, callbackQuery.From);
+                    await Bot.QuestService.TakeQuest(callbackQuery.Message, callbackQuery.From);
                     break;
 
                 case "CancledQuest":
@@ -69,7 +69,7 @@ namespace SupportUS.Web.Bot
                     break;
 
                 case "QuestCompleted":
-                    //await Bot.QuestService.CompleteQuest(callbackQuery.Message);
+                    await Bot.QuestService.CompleteQuest(callbackQuery.Message);
                     break;
             }
         }
