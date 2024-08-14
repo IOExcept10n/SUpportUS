@@ -82,7 +82,7 @@ namespace SupportUS.Web.Bot
 **Название**: {quest.Name ?? "\\-"},
 **Описание**: {quest.Description ?? "\\-"},
 **Стоимость**: {quest.Price},
-**Местоположение**: {quest.Location ?? "\\-"},
+**Местоположение**: {(quest.Location == null ? "\\-" : '#' + quest.Location.Replace(' ', '_'))},
 **Длительность**: {quest.ExpectedDuration?.ToString() ?? "\\-"},
 **Дедлайн**: {quest.Deadline?.ToString() ?? "\\-"}
 ";
