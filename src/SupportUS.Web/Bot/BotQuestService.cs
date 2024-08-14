@@ -95,13 +95,13 @@ namespace SupportUS.Web.Bot
                 case "QuestName":
                     {
                         using var db = Application.Services.GetRequiredService<QuestsDb>();
-                        await UpdateProperty(callbackQuery, db, (x, t) => x.Name = t);
+                        await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.Name);
                         break;
                     }
             }
         }
 
-        private async Task UpdateProperty(CallbackQuery callbackQuery, QuestsDb db, Action<Quest, string> updateAction)
+        private async Task UpdateProperty(CallbackQuery callbackQuery, QuestsDb db, Profile.CreationQuestStatus status)
         {
             Message message = callbackQuery.Message;
             await Bot.Client.SendTextMessageAsync(callbackQuery.Message!.Chat, "Введите название квеста: ");
@@ -119,13 +119,8 @@ namespace SupportUS.Web.Bot
                     await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "Не удаётся найти квест. Попробуйте ещё раз.");
                     return;
                 }
-                if (message.Text == null)
-                {
-                    await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, "Вы не ввели данные для текущего свойства. Попробуйте ещё раз.");
-                    return;
-                }
-                updateAction(quest, message.Text);
-                customer.QuestStatus = Profile.CreationQuestStatus.None;
+                customer.QuestStatus = status;
+                await db.SaveChangesAsync();
             }
         }
     }
