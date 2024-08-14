@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SupportUS.Web.Data;
 using SupportUS.Web.Models;
+using System.Net.Mail;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -241,7 +242,30 @@ namespace SupportUS.Web.Bot
 
         public async Task PublishQuest(Message message)
         {
+            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            var customer = db.Profiles.Find(message.From?.Id);
+            if (customer == null)
+            {
+                await Bot.Client.SendTextMessageAsync(message.Chat.Id,
+                                                      "Вы не зарегистрированы. Нажмите /start для начала работы.",
+                                                      parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2,
+                                                      replyParameters: new() { MessageId = message.MessageId });
+                return;
+            }
+            if (customer.CurrentDraftQuest != null)
+            { 
+                await db.Quests.FindAsync(customer.CurrentDraftQuest);
+                return;
+            }
+            Quest quest = await db.Quests.FindAsync(customer.CurrentDraftQuest);
+            if (customer.Coins < quest.Price)
+            {
 
+            }
+            {
+                
+            }
+            await Bot.MailingService.MailMessageQuest(quest);
         }
 
         private async Task UpdateProperty(CallbackQuery callbackQuery, QuestsDb db, Profile.CreationQuestStatus status)
