@@ -43,6 +43,8 @@ namespace SupportUS.Web.Bot
         {
             if (quest.ExecutorId == null)
                 return;
+            var markup = new InlineKeyboardMarkup()
+                .AddNewRow().AddButton("✔️ Подтвердить выполнение", "QuestCompleted");
             var user = await Bot.Client.GetChatMemberAsync(quest.ExecutorId, quest.ExecutorId.Value);
             await Bot.Client.SendTextMessageAsync(quest.CustomerId, $"✔️ Пользователь @{user.User.Username} начал выполнение вашей задачи.");
         }
@@ -56,16 +58,18 @@ namespace SupportUS.Web.Bot
 
         private async Task OnCallbackQueryMail(CallbackQuery callbackQuery)
         {
-            await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, $"Вы выбрали {callbackQuery.Data}");
             switch (callbackQuery.Data)
             {
                 case "GetQuest":
-                    await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
                     //await Bot.QuestService.TakeQuest(callbackQuery.Message, callbackQuery.From);
                     break;
 
                 case "CancledQuest":
                     await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
+                    break;
+
+                case "QuestCompleted":
+                    //await Bot.QuestService.CompleteQuest(callbackQuery.Message);
                     break;
             }
         }
