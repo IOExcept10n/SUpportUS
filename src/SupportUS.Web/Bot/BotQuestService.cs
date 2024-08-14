@@ -56,14 +56,78 @@ namespace SupportUS.Web.Bot
             return quest;
         }
 
-        public async Task EditQuest(Message message)
+        public async Task EditQuest(Message message, QuestsDb db, Profile profile)
         {
-
-        }
-
-        public async Task StartEditQuest(Message message)
-        {
-
+            var quest = await db.Quests.FindAsync(profile.CurrentDraftQuest!.Value);
+            if (quest == null)
+            {
+                await Bot.Client.SendTextMessageAsync(message.Chat.Id, "Не удалось найти квест для редактирования.");
+                return;
+            }
+            switch (profile.QuestStatus)
+            {
+                case Profile.CreationQuestStatus.Name:
+                    {
+                        quest.Name = message.Text;
+                        break;
+                    }
+                case Profile.CreationQuestStatus.Description:
+                    {
+                        quest.Description = message.Text;
+                        break;
+                    }
+                case Profile.CreationQuestStatus.Location:
+                    {
+                        quest.Location = message.Text;
+                        break;
+                    }
+                case Profile.CreationQuestStatus.Price:
+                    {
+                        if (int.TryParse(message.Text, out int price))
+                        {
+                            if (profile.Coins < price)
+                            {
+                                await Bot.Client.SendTextMessageAsync(message.Chat.Id, "У вас недостаточно средств для указания данной цены.");
+                                return;
+                            }
+                            quest.Price = price;
+                            break;
+                        }
+                        else
+                        {
+                            await Bot.Client.SendTextMessageAsync(message.Chat.Id, "Введите корректное значение цены.");
+                            return;
+                        }
+                    }
+                case Profile.CreationQuestStatus.ExpectedDuration:
+                    {
+                        if (TimeSpan.TryParse(message.Text, out var duration))
+                        {
+                            quest.ExpectedDuration = duration;
+                            break;
+                        }
+                        else
+                        {
+                            await Bot.Client.SendTextMessageAsync(message.Chat.Id, "Введите корректную длительность в формате Ч:ММ:СС.");
+                            return;
+                        }
+                    }
+                case Profile.CreationQuestStatus.Deadline:
+                    {
+                        if (DateTime.TryParse(message.Text, out var deadline))
+                        {
+                            quest.Deadline = deadline;
+                            break;
+                        }
+                        else
+                        {
+                            await Bot.Client.SendTextMessageAsync(message.Chat.Id, "Введите корректную дату в формате ГГГГ.ММ.ДД чч:мм:сс.");
+                            return;
+                        }
+                    }
+            }
+            db.Update(quest);
+            await db.SaveChangesAsync();
         }
 
         internal static string GenerateMessageText(Quest quest)
@@ -90,21 +154,47 @@ namespace SupportUS.Web.Bot
         private async Task OnCallbackQuests(CallbackQuery callbackQuery)
         {
             await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, $"You selected {callbackQuery.Data}");
+            using var db = Application.Services.GetRequiredService<QuestsDb>();
             switch (callbackQuery.Data)
             {
                 case "QuestName":
-                    {
-                        using var db = Application.Services.GetRequiredService<QuestsDb>();
-                        await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.Name);
-                        break;
-                    }
+                    await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.Name);
+                    break;
+                case "QuestDescription":
+                    await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.Description);
+                    break;
+                case "QuestPrice":
+                    await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.Price);
+                    break;
+                case "QuestLocation":
+                    await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.Location);
+                    break;
+                case "QuestDeadline":
+                    await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.Deadline);
+                    break;
+                case "QuestDuration":
+                    await UpdateProperty(callbackQuery, db, Profile.CreationQuestStatus.ExpectedDuration);
+                    break;
+                case "QuestPublish":
+                    //
+                    break;
             }
         }
 
         private async Task UpdateProperty(CallbackQuery callbackQuery, QuestsDb db, Profile.CreationQuestStatus status)
         {
             Message message = callbackQuery.Message;
-            await Bot.Client.SendTextMessageAsync(callbackQuery.Message!.Chat, "Введите название квеста: ");
+            string text = status switch
+            {
+                Profile.CreationQuestStatus.Name => "Введите название квеста",
+                Profile.CreationQuestStatus.Description => "Введите описание квеста",
+                Profile.CreationQuestStatus.Location => "Введите местоположение квеста",
+                Profile.CreationQuestStatus.Price => "Введите цену квеста",
+                Profile.CreationQuestStatus.ExpectedDuration => "Введите предполагаемую длительность квеста",
+                Profile.CreationQuestStatus.Deadline => "Введите дедлайн квеста",
+                _ => "Введён неверный статус."
+            };
+            await Bot.Client.SendTextMessageAsync(callbackQuery.Message!.Chat, text);
             var customer = db.Profiles.Find(message.From?.Id);
             if (customer == null)
             {

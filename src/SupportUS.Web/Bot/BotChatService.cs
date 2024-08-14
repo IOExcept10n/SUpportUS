@@ -3,6 +3,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot;
+using SupportUS.Web.Data;
 
 namespace SupportUS.Web.Bot
 {
@@ -55,9 +56,19 @@ namespace SupportUS.Web.Bot
 
         private async Task OnTextMessage(Message msg)
         {
-            Console.WriteLine($"Received text '{msg.Text}' in {msg.Chat}");
+            Application.Logger.LogInformation("Received text '{text}' in {chat}", msg.Text, msg.Chat);
             if (msg.Text!.StartsWith('/'))
                 await OnCommand(msg.Text, string.Empty, msg);
+            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            var customer = db.Profiles.Find(msg.From?.Id);
+            if (customer == null)
+            {
+                return;
+            }
+            if (customer.CurrentDraftQuest != null && customer.QuestStatus != Models.Profile.CreationQuestStatus.None)
+            {
+                await Bot.QuestService.EditQuest(msg, db, customer);
+            }
             switch (msg.Text)
             {
                 case "Проверить статус заданий 👽":
