@@ -69,6 +69,10 @@ namespace SupportUS.Web.Models
 
         public long? ExecutorId { get; set; }
 
+        public int? MailMessageId { get; set; }
+
+        public long BotMessageId { get; set; }
+
         public void ApplyInfo(QuestInfo info)
         {
             Id = info.Id ?? Id;

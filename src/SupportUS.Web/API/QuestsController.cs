@@ -70,6 +70,7 @@ namespace SupportUS.Web.API
                 info.Price = null;
             }
             quest.ApplyInfo(info);
+            db.Update(quest);
             await db.SaveChangesAsync();
             await context.Response.WriteAsJsonAsync(quest);
         }
@@ -117,8 +118,10 @@ namespace SupportUS.Web.API
             }
             quest.Executor = executor;
             quest.Status = Quest.QuestStatus.InProgress;
-            // TODO: notify.
+            db.Update(quest);
+            db.SaveChanges();
             await db.SaveChangesAsync();
+            Application.Services.GetService<BotService>()?.MailingService.UpdateMessageQuest(quest);
         }
 
         public async Task CancelQuestAsync(HttpContext context, Guid questId, long initiatorId)
