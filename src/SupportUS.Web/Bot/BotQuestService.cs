@@ -2,6 +2,7 @@
 using SupportUS.Web.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SupportUS.Web.Bot
 {
@@ -12,10 +13,18 @@ namespace SupportUS.Web.Bot
             var quest = await DraftQuestAsync(msg);
             if (quest == null)
                 return;
+            var inlineMarkup = new InlineKeyboardMarkup()
+            .AddNewRow().AddButton("Название 🐣", "QuestName")
+            .AddNewRow().AddButton("Описание ✈️", "QuestDescription")
+            .AddNewRow().AddButton("Стоимость 💰", "QuestPrice")
+            .AddNewRow().AddButton("Местоположение ☂️", "QuestLocation")
+            .AddNewRow().AddButton("Длительность 🪐", "QuestDuration")
+            .AddNewRow().AddButton("Дэдлайн🔋", "QuestDeadline")
+            .AddNewRow().AddButton("Опубликовать квест 💅", "PublishQuest");
             await Bot.Client.SendTextMessageAsync(
                 msg.Chat.Id,
                 GenerateMessageText(quest),
-                parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+                parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2, replyMarkup: inlineMarkup);
         }
 
         private async Task<Quest?> DraftQuestAsync(Message msg)
