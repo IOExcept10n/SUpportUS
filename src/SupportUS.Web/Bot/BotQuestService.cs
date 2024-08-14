@@ -1,8 +1,10 @@
-﻿using SupportUS.Web.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using SupportUS.Web.Data;
 using SupportUS.Web.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace SupportUS.Web.Bot
 {
@@ -153,7 +155,6 @@ namespace SupportUS.Web.Bot
         }
         private async Task OnCallbackQuests(CallbackQuery callbackQuery)
         {
-            await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, $"You selected {callbackQuery.Data}");
             using var db = Application.Services.GetRequiredService<QuestsDb>();
             switch (callbackQuery.Data)
             {
@@ -181,14 +182,61 @@ namespace SupportUS.Web.Bot
             }
         }
 
-        public async Task TakeQuest(Message message, User from)
+        public async Task TakeQuest(CallbackQuery query)
         {
-
+            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            var quest = await db.Quests.FirstOrDefaultAsync(x => x.MailMessageId == query.Message.MessageId);
+            if (quest == null)
+            {
+                await Bot.Client.AnswerCallbackQueryAsync(query.Id, "Квест не найден в базе данных.");
+                return;
+            }
+            if (quest.Status != Quest.QuestStatus.Opened)
+            {
+                await Bot.Client.AnswerCallbackQueryAsync(query.Id, "Состояние квеста изменилось, не удаётся подписаться.");
+                return;
+            }
+            var executor = await db.Profiles.FindAsync(query.From.Id);
+            if (executor == null)
+            {
+                await Bot.Client.AnswerCallbackQueryAsync(query.Id, "Вы не зарегистрированы. Введите /start для начала работы.");
+                return;
+            }
+            quest.ExecutorId = executor.Id;
+            quest.Executor = executor;
+            quest.Status = Quest.QuestStatus.InProgress;
+            db.Update(quest);
+            await db.SaveChangesAsync();
+            await Bot.MailingService.UpdateMessageQuest(quest);
+            await Bot.MailingService.MailQuestTaken(quest);
         }
 
-        public async Task CompleteQuest(Message message)
+        public async Task CompleteQuest(CallbackQuery query)
         {
-
+            using var db = Application.Services.GetRequiredService<QuestsDb>();
+            var quest = await db.Quests.FirstOrDefaultAsync(x => x.MailMessageId == query.Message!.MessageId);
+            if (quest == null)
+            {
+                await Bot.Client.AnswerCallbackQueryAsync(query.Id, "Квест не найден в базе данных.");
+                return;
+            }
+            if (quest.Status != Quest.QuestStatus.InProgress)
+            {
+                await Bot.Client.AnswerCallbackQueryAsync(query.Id, "Неверное состояние квеста, не удаётся завершить выполнение.");
+                return;
+            }
+            var executor = await db.Profiles.FindAsync(quest.ExecutorId);
+            if (executor == null)
+            {
+                await Bot.Client.AnswerCallbackQueryAsync(query.Id, "Не удалось найти исполнителя в базе данных.");
+                return;
+            }
+            executor.Coins += quest.Price;
+            quest.Status = Quest.QuestStatus.Completed;
+            db.Update(quest);
+            db.Update(executor);
+            await db.SaveChangesAsync();
+            await Bot.MailingService.UpdateMessageQuest(quest);
         }
 
         public async Task PublishQuest(Message message)
