@@ -1,13 +1,9 @@
-﻿using Telegram.Bot.Types;
-using Microsoft.VisualBasic;
-using Telegram.Bot;
-using Telegram.Bot.Args;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
+﻿using SupportUS.Web.Data;
 using SupportUS.Web.Models;
-using SupportUS.Web.Data;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
+
 namespace SupportUS.Web.Bot
 {
     public class BotMailingService(BotService bot, WebApplication app) : TelegramBotServiceBase(bot, app)
@@ -60,12 +56,12 @@ namespace SupportUS.Web.Bot
 
         private async Task OnCallbackQueryMail(CallbackQuery callbackQuery)
         {
-            await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, $"You selected {callbackQuery.Data}");
+            await Bot.Client.AnswerCallbackQueryAsync(callbackQuery.Id, $"Вы выбрали {callbackQuery.Data}");
             switch (callbackQuery.Data)
             {
                 case "GetQuest":
                     await Bot.Client.DeleteMessageAsync(callbackQuery.Message!.Chat.Id, callbackQuery.Message.MessageId);
-                    //
+                    //await Bot.QuestService.TakeQuest(callbackQuery.Message, callbackQuery.From);
                     break;
 
                 case "CancledQuest":
